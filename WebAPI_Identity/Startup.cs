@@ -40,7 +40,7 @@ namespace WebAPI_Identity
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddAutoMapper();
+            services.AddAutoMapper(typeof(AutoMapperProfile));
             
             // configure strongly typed settings objects
             var appSettingsSection = Configuration.GetSection("AppSettings");
