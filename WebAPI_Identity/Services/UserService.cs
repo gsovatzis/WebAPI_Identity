@@ -12,7 +12,7 @@ namespace WebAPI_Identity.Services
     {
         MyUser Authenticate(string username, string password);
         IEnumerable<MyUser> GetAll();
-        MyUser GetById(string id);
+        MyUser GetById(string userId);
         IdentityResult Create(MyUser user, string password);
         void Update(MyUser user, string currentPass = null, string password = null);
         void Delete(string id);
@@ -20,16 +20,13 @@ namespace WebAPI_Identity.Services
 
     public class UserService : IUserService
     {
-        private ApplicationDbContext _context;
         private readonly SignInManager<MyUser> _signInManager;
         private readonly UserManager<MyUser> _userManager;
 
         public UserService(ApplicationDbContext context, UserManager<MyUser> userManager, SignInManager<MyUser> signInManager)
-        //public UserService(UserManager<MyUser> userManager, SignInManager<MyUser> signInManager)
         {
             _signInManager = signInManager;
             _userManager = userManager;
-            _context = context;
         }
 
         public MyUser Authenticate(string username, string password)
@@ -37,7 +34,6 @@ namespace WebAPI_Identity.Services
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
                 return null;
 
-            //var user = _context.Users.SingleOrDefault(x => x.Username == username);
             var user = _userManager.FindByNameAsync(username).Result;
 
             // check if username exists
@@ -45,7 +41,6 @@ namespace WebAPI_Identity.Services
                 return null;
 
             // check if password is correct
-            //if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
             var signInResult = _signInManager.CheckPasswordSignInAsync(user, password, false).Result;
             if(!signInResult.Succeeded)
                 return null;
@@ -56,12 +51,12 @@ namespace WebAPI_Identity.Services
 
         public IEnumerable<MyUser> GetAll()
         {
-            return _context.Users;
+            return _userManager.Users;
         }
 
-        public MyUser GetById(string id)
+        public MyUser GetById(string userId)
         {
-            return _context.Users.Find(id);
+            return _userManager.FindByIdAsync(userId).Result;
         }
 
         public IdentityResult Create(MyUser user, string password)
@@ -70,32 +65,19 @@ namespace WebAPI_Identity.Services
             if (string.IsNullOrWhiteSpace(password))
                 throw new Exception("Password is required");
 
-            if (_context.Users.Any(x => x.UserName == user.UserName))
+            if (_userManager.Users.Any(x => x.UserName == user.UserName))
                 throw new Exception("Username \"" + user.UserName + "\" is already taken");
-
-            /*byte[] passwordHash, passwordSalt;
-            CreatePasswordHash(password, out passwordHash, out passwordSalt);
-
-            user.PasswordHash = passwordHash;
-            user.PasswordSalt = passwordSalt;
-
-            _context.Users.Add(user);
-            _context.SaveChanges();
-            */
 
             var result = _userManager.CreateAsync(user, password);
             return result.Result;
-
-            
-
             
         }
 
 
         public void Update(MyUser userParam, string currentPass = null, string password = null)
         {
-            
-            var user = _context.Users.Find(userParam.Id);
+
+            var user = _userManager.FindByIdAsync(userParam.UserName).Result;
 
             if (user == null)
                 throw new Exception("User not found");
@@ -103,7 +85,7 @@ namespace WebAPI_Identity.Services
             if (userParam.UserName != user.UserName)
             {
                 // username has changed so check if the new username is already taken
-                if (_context.Users.Any(x => x.UserName == userParam.UserName))
+                if (_userManager.Users.Any(x => x.UserName == userParam.UserName))
                     throw new Exception("Username " + userParam.UserName + " is already taken");
             }
 
@@ -115,21 +97,10 @@ namespace WebAPI_Identity.Services
             // update password if it was entered
             if (!string.IsNullOrWhiteSpace(password) && !string.IsNullOrWhiteSpace(currentPass))
             {
-                /*byte[] passwordHash, passwordSalt;
-                CreatePasswordHash(password, out passwordHash, out passwordSalt);
-
-                user.PasswordHash = passwordHash;
-                user.PasswordSalt = passwordSalt;
-                */
-
                 _userManager.ChangePasswordAsync(user, currentPass, password);
             }
 
             _userManager.UpdateAsync(user);
-            /*
-            _context.Users.Update(user);
-            _context.SaveChanges();
-            */
         }
 
         public void Delete(string id)
@@ -140,14 +111,6 @@ namespace WebAPI_Identity.Services
                 _userManager.DeleteAsync(user);
             }
 
-            /*
-            var user = _context.Users.Find(id);
-            if (user != null)
-            {
-                _context.Users.Remove(user);
-                _context.SaveChanges();
-            }
-            */
         }
 
         // private helper methods

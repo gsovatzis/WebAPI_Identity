@@ -79,7 +79,7 @@ namespace WebAPI_Identity
                     OnTokenValidated = context =>
                     {
                         var userService = context.HttpContext.RequestServices.GetRequiredService<IUserService>();
-                        var userId = context.Principal.Identity.Name; //int.Parse(context.Principal.Identity.Name);
+                        var userId = context.Principal.Identity.Name; 
                         var user = userService.GetById(userId);
                         if (user == null)
                         {

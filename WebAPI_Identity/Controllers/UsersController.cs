@@ -20,7 +20,7 @@ namespace WebAPI_Identity.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class UsersController : Controller
     {
         private IUserService _userService;

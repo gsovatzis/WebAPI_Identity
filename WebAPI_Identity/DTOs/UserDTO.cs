@@ -7,7 +7,7 @@ namespace WebAPI_Identity.DTOs
 {
     public class UserDTO
     {
-        // This is an object to be user from WebAPI body -> it will be mapped with MyUser through Automapper
+        // This is an object to be used from WebAPI body -> it will be mapped with MyUser through Automapper
         public string Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }

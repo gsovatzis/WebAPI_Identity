@@ -11,7 +11,7 @@ using WebAPI_Identity.Models;
 namespace WebAPI_Identity.Controllers
 {
     [Authorize]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     public class ProductsController : ControllerBase
     {
@@ -33,9 +33,13 @@ namespace WebAPI_Identity.Controllers
 
         // GET: api/Products/5
         [HttpGet("{id}", Name = "Get")]
-        public string Get(int id)
+        public ActionResult Get(int id)
         {
-            return "value";
+            var prod = _context.products.Find(id);
+            if (prod != null)
+                return new JsonResult(prod);
+            else
+                return NotFound();
         }
 
         // POST: api/Products
@@ -50,16 +54,34 @@ namespace WebAPI_Identity.Controllers
 
         // PUT: api/Products/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] Product value)
+        public ActionResult Put(int id, [FromBody] Product value)
         {
-            _context.Update(value);
-            _context.SaveChanges();
+            var prod = _context.products.Find(id);
+
+            if (prod != null)
+            {
+                _context.Update(prod);
+                _context.SaveChanges();
+                return new JsonResult(prod);
+            } else
+            {
+                return NotFound();
+            }
         }
 
         // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public ActionResult Delete(int id)
         {
+            var prod = _context.products.Find(id);
+            if(prod!=null) { 
+                _context.Remove(prod);
+                _context.SaveChanges();
+                return new JsonResult(prod);
+            } else
+            {
+                return NotFound();
+            }
         }
     }
 }
