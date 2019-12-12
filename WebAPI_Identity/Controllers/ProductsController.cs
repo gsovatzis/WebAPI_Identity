@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebAPI_Identity.Data;
 using WebAPI_Identity.Models;
 
@@ -56,13 +57,13 @@ namespace WebAPI_Identity.Controllers
         [HttpPut("{id}")]
         public ActionResult Put(int id, [FromBody] Product value)
         {
-            var prod = _context.products.Find(id);
+            var prod = _context.products.AsNoTracking().Where(p => p.Id == id);
 
             if (prod != null)
             {
-                _context.Update(prod);
+                _context.Update(value);
                 _context.SaveChanges();
-                return new JsonResult(prod);
+                return new JsonResult(prod);    // I return the old product values (before the update)
             } else
             {
                 return NotFound();
@@ -77,7 +78,7 @@ namespace WebAPI_Identity.Controllers
             if(prod!=null) { 
                 _context.Remove(prod);
                 _context.SaveChanges();
-                return new JsonResult(prod);
+                return new JsonResult(prod);    // I return the deleted product
             } else
             {
                 return NotFound();
